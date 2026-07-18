@@ -8,7 +8,8 @@ const {
   displayHost,
   cleanLink,
   parseImport,
-  exportPayload
+  exportPayload,
+  renameLink
 } = require("./app.js");
 
 test("normalizeUrl adds HTTPS when omitted", () => {
@@ -89,6 +90,25 @@ test("parseImport makes duplicate imported IDs unique", () => {
 test("parseImport explains invalid backups", () => {
   assert.throws(() => parseImport("not json"), /not valid JSON/);
   assert.throws(() => parseImport(JSON.stringify({ items: [] })), /No links/);
+});
+
+test("renameLink updates exactly one entry without mutating the source", () => {
+  const source = [
+    { id: "1", name: "Old Name", url: "https://cal.com/old", updatedAt: "before" },
+    { id: "2", name: "Other Name", url: "https://cal.com/other", updatedAt: "before" }
+  ];
+  const renamed = renameLink(source, "1", "  New Name  ", "2026-07-18T12:00:00.000Z");
+
+  assert.equal(renamed[0].name, "New Name");
+  assert.equal(renamed[0].updatedAt, "2026-07-18T12:00:00.000Z");
+  assert.deepEqual(renamed[1], source[1]);
+  assert.equal(source[0].name, "Old Name");
+});
+
+test("renameLink rejects empty names and missing entries", () => {
+  const source = [{ id: "1", name: "Old Name", url: "https://cal.com/old" }];
+  assert.throws(() => renameLink(source, "1", "   "), /empty/);
+  assert.throws(() => renameLink(source, "missing", "New Name"), /not found/);
 });
 
 test("exportPayload creates a round-trippable versioned backup", () => {

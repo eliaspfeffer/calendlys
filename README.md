@@ -7,7 +7,7 @@ Paste a friend’s Cal.com, Calendly, or other scheduling link and keep it local
 - Paste a link directly in the header
 - Automatically derives names such as `eliaspfeffer` → **Elias Pfeffer**
 - Search, copy, open, and delete saved links
-- Double-click a displayed name to rename it inline
+- Double-click a displayed name (or use the pencil button), edit it, and confirm with **Save** or Enter
 - Saves through the local server to [`data/calendlys.txt`](data/calendlys.txt)
 - **Push GitHub** commits that text file and pushes it to this repository with one click
 - Browser `localStorage` fallback plus `.txt` import/download

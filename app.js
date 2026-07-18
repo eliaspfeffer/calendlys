@@ -151,6 +151,20 @@
     });
   }
 
+  function renameLink(items, id, value, updatedAt = new Date().toISOString()) {
+    const name = String(value ?? "").trim().slice(0, 80);
+    if (!name) throw new Error("Name cannot be empty.");
+
+    let found = false;
+    const renamed = items.map((item) => {
+      if (item.id !== id) return item;
+      found = true;
+      return { ...item, name, updatedAt };
+    });
+    if (!found) throw new Error("Link entry was not found.");
+    return renamed;
+  }
+
   function exportPayload(links) {
     return JSON.stringify({
       app: "Calendlys",
@@ -160,7 +174,7 @@
     }, null, 2);
   }
 
-  const api = { normalizeUrl, inferProvider, inferName, humanizeHandle, displayHost, cleanLink, parseImport, exportPayload };
+  const api = { normalizeUrl, inferProvider, inferName, humanizeHandle, displayHost, cleanLink, parseImport, renameLink, exportPayload };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   root.Calendlys = api;
 
@@ -244,16 +258,24 @@
     row.dataset.id = link.id;
 
     const person = el("div", "person");
+    const nameLine = el("div", "person-name-line");
     const heading = el("h2", "person-name", link.name);
     heading.tabIndex = 0;
     heading.title = "Double-click to rename";
     heading.setAttribute("role", "button");
     heading.setAttribute("aria-label", `${link.name}; double-click or press Enter to rename`);
-    heading.addEventListener("dblclick", () => beginRename(link, heading));
+    heading.addEventListener("dblclick", () => beginRename(link, nameLine));
     heading.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") beginRename(link, heading);
+      if (event.key === "Enter") beginRename(link, nameLine);
     });
-    person.append(heading);
+
+    const rename = el("button", "rename-button", "✎");
+    rename.type = "button";
+    rename.title = "Rename";
+    rename.setAttribute("aria-label", `Rename ${link.name}`);
+    rename.addEventListener("click", () => beginRename(link, nameLine));
+    nameLine.append(heading, rename);
+    person.append(nameLine);
 
     const meta = el("div", "link-meta");
     const providerElement = el("span", "provider", provider.name);
@@ -288,15 +310,25 @@
     return node;
   }
 
-  function beginRename(link, heading) {
-    if (!heading.isConnected || heading.parentElement.querySelector(".name-editor")) return;
+  function beginRename(link, nameLine) {
+    if (!nameLine.isConnected || nameLine.parentElement.querySelector(".name-editor-form")) return;
 
+    const form = el("form", "name-editor-form");
     const input = el("input", "name-editor");
     input.type = "text";
     input.value = link.name;
     input.maxLength = 80;
+    input.required = true;
     input.setAttribute("aria-label", `Rename ${link.name}`);
-    heading.replaceWith(input);
+
+    const save = el("button", "name-editor-save", "Save");
+    save.type = "submit";
+    const cancelButton = el("button", "name-editor-cancel", "×");
+    cancelButton.type = "button";
+    cancelButton.title = "Cancel";
+    cancelButton.setAttribute("aria-label", "Cancel renaming");
+    form.append(input, save, cancelButton);
+    nameLine.replaceWith(form);
     input.focus();
     input.select();
 
@@ -308,12 +340,16 @@
     };
     const commit = async () => {
       if (finished) return;
-      const name = input.value.trim();
-      if (!name) {
-        showToast("Name cannot be empty");
+
+      let nextLinks;
+      try {
+        nextLinks = renameLink(links, link.id, input.value);
+      } catch (error) {
+        showToast(error.message);
         input.focus();
         return;
       }
+      const name = nextLinks.find((item) => item.id === link.id).name;
       if (name === link.name) {
         cancel();
         return;
@@ -321,28 +357,28 @@
 
       finished = true;
       input.disabled = true;
-      const nextLinks = links.map((item) => item.id === link.id
-        ? { ...item, name: name.slice(0, 80), updatedAt: new Date().toISOString() }
-        : item);
+      save.disabled = true;
+      cancelButton.disabled = true;
       if (!await persist(nextLinks)) {
         render();
         return;
       }
       links = nextLinks;
       render();
-      showToast(`Renamed to ${name.slice(0, 80)}`);
+      showToast(`Renamed to ${name}`);
     };
 
-    input.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        commit();
-      } else if (event.key === "Escape") {
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      commit();
+    });
+    form.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
         event.preventDefault();
         cancel();
       }
     });
-    input.addEventListener("blur", commit);
+    cancelButton.addEventListener("click", cancel);
   }
 
   async function addLink(event) {
