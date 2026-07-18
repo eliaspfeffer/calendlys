@@ -1,0 +1,14 @@
+{
+  "name": "calendlys",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A tiny local-first address book for scheduling links.",
+  "scripts": {
+    "start": "python3 server.py",
+    "test": "node --test && python3 -m unittest -v test_server.py"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

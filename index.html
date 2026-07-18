@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Paste and keep your friends’ scheduling links locally.">
+  <meta name="theme-color" content="#f5f5f2">
+  <title>Calendlys</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2224%22 fill=%22%231d1d1b%22/><path d=%22M28 39h44M35 25v14M65 25v14M29 31h42a5 5 0 015 5v38H24V36a5 5 0 015-5z%22 fill=%22none%22 stroke=%22white%22 stroke-width=%227%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="Calendlys home">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>Calendlys</span>
+      </a>
+
+      <form id="quick-add-form" class="quick-add" novalidate>
+        <label class="visually-hidden" for="url-input">Scheduling link</label>
+        <span class="paste-icon" aria-hidden="true">↗</span>
+        <input id="url-input" name="url" type="text" inputmode="url" autocomplete="off" placeholder="Paste a Cal.com or Calendly link…" required autofocus>
+        <button class="add-button" type="submit">Add</button>
+      </form>
+
+      <button class="sync-button" id="github-sync-button" type="button" title="Save the list to data/calendlys.txt and push it to GitHub">
+        <span aria-hidden="true">↑</span> Push GitHub
+      </button>
+    </header>
+
+    <main>
+      <section class="collection" aria-labelledby="collection-title">
+        <div class="collection-header">
+          <div class="title-line">
+            <h1 id="collection-title">People</h1>
+            <span id="link-count" class="count" aria-live="polite">0</span>
+          </div>
+          <label class="search-field" for="search-input">
+            <span aria-hidden="true">⌕</span>
+            <span class="visually-hidden">Search people and links</span>
+            <input id="search-input" type="search" placeholder="Search" autocomplete="off">
+            <kbd>/</kbd>
+          </label>
+        </div>
+
+        <div id="link-list" class="link-list"></div>
+
+        <div id="empty-state" class="empty-state">
+          <div class="empty-icon" aria-hidden="true">⌁</div>
+          <h2>Paste a link above.</h2>
+          <p>The name is pulled from the link automatically.</p>
+        </div>
+
+        <div id="no-results" class="empty-state" hidden>
+          <div class="empty-icon" aria-hidden="true">⌕</div>
+          <h2>No matches.</h2>
+          <p>Try another name or service.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span id="storage-status">Browser storage</span>
+      <div class="footer-actions">
+        <button class="text-button" id="import-button" type="button">Import</button>
+        <button class="text-button" id="export-button" type="button">Download .txt</button>
+        <input id="import-input" type="file" accept="application/json,text/plain,.json,.txt" hidden>
+      </div>
+    </footer>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
