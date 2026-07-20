@@ -2,6 +2,10 @@
 
 Paste a friend’s Cal.com, Calendly, or other scheduling link and keep it locally. Calendlys derives the person’s name from the URL automatically—no form filling required.
 
+![Calendlys screenshot showing saved scheduling links](assets/calendlys-screenshot.png)
+
+Calendlys is a tiny local-first address book for scheduling links: paste a URL, get a readable name, search later, copy/open quickly, and optionally push the saved `.txt` file to GitHub.
+
 ## Features
 
 - Paste a link directly in the header
